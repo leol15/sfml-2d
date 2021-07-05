@@ -84,5 +84,7 @@ float magnitude(const vec2& v) {
 	return static_cast<float>(sqrt(v.x * v.x + v.y * v.y));
 }
 
-
+void bound(float& val, float max, float min) {
+	val = val > max ? max : (val < min ? min : val);
+}
 

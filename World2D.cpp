@@ -8,7 +8,7 @@
 World2D::World2D(int width, int height) : width_(width), height_(height) {
 	std::cerr << "world2d" << std::endl;
 	// 10 critters at random location
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < 0; i++) {
 		WorldCritter wc = {new RollBug(), 
 			new CritterState({
 				static_cast<float>(rand() % width_), 
@@ -16,8 +16,22 @@ World2D::World2D(int width, int height) : width_(width), height_(height) {
 			})};
 		wc.critter_state->v.x = static_cast<float>(rand() % 100 - 50) / 1000;
 		wc.critter_state->v.y = static_cast<float>(rand() % 100 - 50) / 1000;
+		wc.critter_state->radius = 10;
 		critters.push_back(wc);
 	}
+
+	
+	WorldCritter wc = {new RollBug(), new CritterState({400, 100})};
+		wc.critter_state->v.y = 0.25f;
+		wc.critter_state->v.x = 0;
+		wc.critter_state->radius = 50;
+	critters.push_back(wc);
+	WorldCritter wc2 = {new RollBug(), new CritterState({400, 700})};
+		wc2.critter_state->v.y = -0.25f;
+		wc2.critter_state->v.x = 0;
+		wc2.critter_state->radius = 50;
+	critters.push_back(wc2);
+	
 }
 
 void World2D::render(sf::RenderWindow& window) const {
@@ -25,43 +39,61 @@ void World2D::render(sf::RenderWindow& window) const {
 
 	// draw critters
 	for (auto& wc : critters) {
-		sf::CircleShape shape(wc.critter_state->radius);
+		const CritterState& st = *(wc.critter_state); 
+		sf::CircleShape shape(st.radius);
 		shape.setFillColor(sf::Color::Blue);
-		shape.setPosition(wc.critter_state->p.x, wc.critter_state->p.y);
+		shape.setPosition(st.p.x - st.radius, st.p.y - st.radius);
 		window.draw(shape);
 	}
 }
 
 void World2D::update() {
 	// move them!
-	for (auto& wc : critters) {
+	for (unsigned int i = 0; i < critters.size(); i++) {
+		auto& wc = critters[i];
 		CritterState * st = wc.critter_state;
-		st->p += st->v;
 
 		// circle collision
-		for (auto& wc2 : critters) {
-			if (&wc == &wc2) break;
+		for (unsigned int j = i + 1; j < critters.size(); j++) {
+			auto& wc2 = critters[j];
 			// ?
 			CritterState * st2 = wc2.critter_state;
 			// DBUG(sqDist(wc.critter_state->p, wc2.critter_state->p));
-			if (sqDist(wc.critter_state->p, wc2.critter_state->p) < 
-					(st->radius + st2->radius) * (st->radius + st2->radius)) {
+			float sqD = sqDist(wc.critter_state->p, wc2.critter_state->p);
+			if (sqD < (st->radius + st2->radius) * (st->radius + st2->radius)) {
 				// !
-				vec2 d12 = normalize(st->p - st2->p);
-				vec2 v12 = (st->v * d12) * d12;
-				vec2 v21 = -(st2->v * d12) * d12;
-				DBUG(d12);
-				DBUG(v12);
-				DBUG(v21);
+				vec2 d12 = normalize(st2->p - st->p);
+				float v12_mag =  (st-> v * d12);
+				float v21_mag = -(st2->v * d12);
 				// todo mass
-				st->v += v21 - v12;
-				st2->v -= v21 - v12;
+				if (v12_mag > 0) {
+					st->v -= v12_mag * d12;
+					st2->v += v12_mag * d12;
+				}
+				if (v21_mag > 0) {
+					st->v -= v21_mag * d12;
+					st2->v += v21_mag * d12;
+				}
+				// push back
+				// st->p -= d12 * 30.1f;
+				// st2->p += d12 * 30.1f;
 			}
 		}
+
+	}
+
+	for (auto& wc : critters) {
+		CritterState * st = wc.critter_state;
+		// bound(st->v.x, 0.1f, -0.1f);
+		// bound(st->v.y, 0.1f, -0.1f);
+
+		st->p += st->v;
 
 		// constaint
 		reflect(st->p.x, st->v.x, 0, width_);
 		reflect(st->p.y, st->v.y, 0, height_);
+
+		// DBUG(st->v);
 	}
 }
 
