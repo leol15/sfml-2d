@@ -3,7 +3,7 @@
 #define WORLD2D_H_
 
 #include <chrono>
-
+#include <thread>
 #include "Critter.h"
 
 typedef std::chrono::time_point<std::chrono::high_resolution_clock> time_point_t;
@@ -17,12 +17,15 @@ struct WorldCritter {
 class World2D {
 public:
 	World2D(int width, int height);
-	~World2D() { }
+	~World2D();
 	void render(sf::RenderWindow& window) const;
 	void update();
 private:
 	int width_, height_;
 	std::vector<WorldCritter> critters;
+	void loopedUpdate();
+	bool kill_thread_ = false;
+	std::thread update_thread_;
 };
 
 

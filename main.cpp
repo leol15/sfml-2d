@@ -21,7 +21,7 @@ int main()
         window.close();
     }
 
-    world.update();
+    // world.update();
     window.clear();
     world.render(window);
     window.display();

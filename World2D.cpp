@@ -2,6 +2,8 @@
 #include <iostream>
 #include <algorithm>    // std::shuffle
 #include <vector>
+#include <thread>         // std::thread
+#include <chrono>
 
 #include "RollBug.h"
 #include "World2D.h"
@@ -15,8 +17,6 @@ World2D::World2D(int width, int height)
 	// 10 critters at random location
 	for (int i = 0; i < 30; i++) {
 		sf::Color randomColor(rand() % 200 + 55, rand() % 200 + 55, rand() % 200 + 55);
-		// sf::Color randomColor = rand() % 2 ? 
-		// 	sf::Color::Red : sf::Color::Green;
 		WorldCritter wc = {
 			new RollBug(),
 			new CritterState({
@@ -27,10 +27,32 @@ World2D::World2D(int width, int height)
 		};
 		wc.critter_state->v.x = static_cast<float>(rand() % 100 - 50) / 10;
 		wc.critter_state->v.y = static_cast<float>(rand() % 100 - 50) / 10;
-		wc.critter_state->radius = 15;
+		wc.critter_state->radius = rand() % 10 + 5;
 		critters.push_back(wc);
 	}
+
+	// start update
+	update_thread_ = std::thread(World2D::loopedUpdate, this);
+	// updateLoop.detach();
 }
+World2D::~World2D() {
+	this->kill_thread_ = true;
+	for (auto & wc : critters) {
+		delete wc.critter;
+		delete wc.critter_state;
+		delete wc.critter_prop;
+	}
+	update_thread_.join();
+}
+
+void World2D::loopedUpdate() {
+	using namespace std::chrono_literals;
+	while (!kill_thread_) {
+		std::this_thread::sleep_for(16ms);
+		update();
+	}
+}
+
 
 void World2D::render(sf::RenderWindow& window) const {
 	// draw background, environemnt
@@ -60,9 +82,13 @@ void World2D::update() {
 			float sqD = sqDist(st->p, st2->p);
 			float touch_dist = st->radius + st2->radius;
 			if (sqD <= (touch_dist) * (touch_dist)) {
-				auto tmp_col = wc.critter_prop->color;
-				wc.critter_prop->color = wc2.critter_prop->color;
-				wc2.critter_prop->color = wc.critter_prop->color;
+				auto col1 = wc.critter_prop->color;
+				auto col2 = wc2.critter_prop->color;
+				if (magnitude(st->v) > magnitude(st2->v)) {
+					wc2.critter_prop->color = col1;	
+				} else {
+					wc.critter_prop->color = col2;
+				}
 				// !
 				vec2 d12 = normalize(st2->p - st->p);
 				float v12_mag =  (st-> v * d12) * COLLISION_COE;
