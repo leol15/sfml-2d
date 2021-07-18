@@ -5,6 +5,8 @@
 int main()
 {
   sf::RenderWindow window(sf::VideoMode(800, 800), "SFML works!");
+  window.setFramerateLimit(60);
+
   sf::CircleShape shape(400.f);
   shape.setFillColor(sf::Color::Green);
 
@@ -20,14 +22,12 @@ int main()
     }
 
     world.update();
-
     window.clear();
-    // window.draw(shape);
     world.render(window);
     window.display();
 
     // update
-    shape.setFillColor(sf::Color(10, 10, 40));
+    // shape.setFillColor(sf::Color(10, 10, 40));
   }
 
   return 0;

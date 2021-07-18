@@ -2,7 +2,11 @@
 #ifndef WORLD2D_H_
 #define WORLD2D_H_
 
+#include <chrono>
+
 #include "Critter.h"
+
+typedef std::chrono::time_point<std::chrono::high_resolution_clock> time_point_t;
 
 struct WorldCritter {
 	Critter * critter;
