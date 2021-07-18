@@ -1,22 +1,33 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <algorithm>    // std::shuffle
 #include <vector>
+
 #include "RollBug.h"
 #include "World2D.h"
+
+constexpr float GRAVITY = 0;
+constexpr float COLLISION_COE = 1;
 
 
 World2D::World2D(int width, int height)
 	: width_(width), height_(height) {
 	// 10 critters at random location
-	for (int i = 0; i < 1000; i++) {
-		WorldCritter wc = {new RollBug(),
+	for (int i = 0; i < 30; i++) {
+		sf::Color randomColor(rand() % 200 + 55, rand() % 200 + 55, rand() % 200 + 55);
+		// sf::Color randomColor = rand() % 2 ? 
+		// 	sf::Color::Red : sf::Color::Green;
+		WorldCritter wc = {
+			new RollBug(),
 			new CritterState({
 				static_cast<float>(rand() % width_), 
 				static_cast<float>(rand() % height_)
-			})};
-		wc.critter_state->v.x = static_cast<float>(rand() % 100 - 50) / 100;
-		wc.critter_state->v.y = static_cast<float>(rand() % 100 - 50) / 100;
-		wc.critter_state->radius = 10;
+			}),
+			new CritterProp(randomColor)
+		};
+		wc.critter_state->v.x = static_cast<float>(rand() % 100 - 50) / 10;
+		wc.critter_state->v.y = static_cast<float>(rand() % 100 - 50) / 10;
+		wc.critter_state->radius = 15;
 		critters.push_back(wc);
 	}
 }
@@ -27,13 +38,14 @@ void World2D::render(sf::RenderWindow& window) const {
 	for (auto& wc : critters) {
 		const CritterState& st = *(wc.critter_state); 
 		sf::CircleShape shape(st.radius);
-		shape.setFillColor(sf::Color::Red);
+		shape.setFillColor(wc.critter_prop->color);
 		shape.setPosition(st.p.x - st.radius, st.p.y - st.radius);
 		window.draw(shape);
 	}
 }
 
 void World2D::update() {
+	random_shuffle(critters.begin(), critters.end());
 	// move them!
 	for (unsigned int i = 0; i < critters.size(); i++) {
 		auto& wc = critters[i];
@@ -48,10 +60,13 @@ void World2D::update() {
 			float sqD = sqDist(st->p, st2->p);
 			float touch_dist = st->radius + st2->radius;
 			if (sqD <= (touch_dist) * (touch_dist)) {
+				auto tmp_col = wc.critter_prop->color;
+				wc.critter_prop->color = wc2.critter_prop->color;
+				wc2.critter_prop->color = wc.critter_prop->color;
 				// !
 				vec2 d12 = normalize(st2->p - st->p);
-				float v12_mag =  (st-> v * d12) * 0.95f;
-				float v21_mag = -(st2->v * d12) * 0.95f;
+				float v12_mag =  (st-> v * d12) * COLLISION_COE;
+				float v21_mag = -(st2->v * d12) * COLLISION_COE;
 				// todo mass
 				st->v -= (v12_mag + v21_mag) * d12;
 				st2->v += (v12_mag + v21_mag) * d12;
@@ -73,18 +88,15 @@ void World2D::update() {
 	// forces
 	for (auto & critter : critters) {
 		auto * critter_state = critter.critter_state;
+		// gravity
+		critter_state->v += {0, GRAVITY};
 		// drag
 		// critter_state->v *= 0.9999f;
-		// gravity
-		critter_state->v += {0, 0.01f};
 	}
 
 	// actaully move them
 	for (auto& wc : critters) {
 		CritterState * st = wc.critter_state;
-		// bound(st->v.x, 0.1f, -0.1f);
-		// bound(st->v.y, 0.1f, -0.1f);
-
 		// update
 		st->p += st->v;
 

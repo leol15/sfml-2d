@@ -11,6 +11,7 @@ typedef std::chrono::time_point<std::chrono::high_resolution_clock> time_point_t
 struct WorldCritter {
 	Critter * critter;
 	CritterState * critter_state;
+	CritterProp * critter_prop;
 };
 
 class World2D {
