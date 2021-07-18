@@ -57,9 +57,11 @@ void reflect(float & pos, float & vel, float min, float max) {
 	if (pos < min) {
 		pos = min;
 		vel = vel < 0 ? -vel : vel;
+		vel *= 0.9f;
 	} else if (pos > max) {
 		pos = max;
 		vel = vel > 0 ? -vel : vel;
+		vel *= 0.9f;
 	}
 }
 

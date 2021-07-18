@@ -16,7 +16,7 @@ World2D::World2D(int width, int height)
 			})};
 		wc.critter_state->v.x = static_cast<float>(rand() % 100 - 50) / 100;
 		wc.critter_state->v.y = static_cast<float>(rand() % 100 - 50) / 100;
-		wc.critter_state->radius = 5;
+		wc.critter_state->radius = 10;
 		critters.push_back(wc);
 	}
 }
@@ -45,24 +45,25 @@ void World2D::update() {
 			// ?
 			CritterState * st2 = wc2.critter_state;
 			// DBUG(sqDist(wc.critter_state->p, wc2.critter_state->p));
-			float sqD = sqDist(wc.critter_state->p, wc2.critter_state->p);
+			float sqD = sqDist(st->p, st2->p);
 			float touch_dist = st->radius + st2->radius;
-			if (sqD < (touch_dist) * (touch_dist)) {
+			if (sqD <= (touch_dist) * (touch_dist)) {
 				// !
 				vec2 d12 = normalize(st2->p - st->p);
 				float v12_mag =  (st-> v * d12) * 0.95f;
 				float v21_mag = -(st2->v * d12) * 0.95f;
 				// todo mass
-				st->v -= v12_mag * d12;
-				st2->v += v12_mag * d12;
-				st->v -= v21_mag * d12;
-				st2->v += v21_mag * d12;
+				st->v -= (v12_mag + v21_mag) * d12;
+				st2->v += (v12_mag + v21_mag) * d12;
 				// push back
 				float distance = magnitude(st2->p - st->p) - touch_dist;
 				if (distance < 0) {
 					distance -= 0.01f;
 					st->p += d12 * (distance / 2);
 					st2->p -= d12 * (distance / 2);
+					// give it a kick too
+					st->v  -= d12 * (abs(distance) / st->radius) * 0.5;
+					st2->v += d12 * (abs(distance) / st->radius) * 0.5;
 				}
 			}
 		}
@@ -75,7 +76,7 @@ void World2D::update() {
 		// drag
 		// critter_state->v *= 0.9999f;
 		// gravity
-		critter_state->v += {0, 0.009f};
+		critter_state->v += {0, 0.01f};
 	}
 
 	// actaully move them
