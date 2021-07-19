@@ -2,26 +2,23 @@
 // #include <Color.hpp>
 #include "World2D.h"
 
+constexpr int W = 1200;
+constexpr int H = 800;
+
 int main()
 {
-  sf::RenderWindow window(sf::VideoMode(800, 800), "SFML works!");
+  sf::RenderWindow window(sf::VideoMode(W, H), "SFML works!");
   window.setFramerateLimit(60);
 
   sf::CircleShape shape(400.f);
   shape.setFillColor(sf::Color::Green);
 
-  World2D world(800, 800);
+  World2D world(W, H);
 
   while (window.isOpen())
   {
-    sf::Event event;
-    while (window.pollEvent(event))
-    {
-      if (event.type == sf::Event::Closed)
-        window.close();
-    }
+    world.handleEvents(window);
 
-    // world.update();
     window.clear();
     world.render(window);
     window.display();
