@@ -2,7 +2,7 @@
 // #include <Color.hpp>
 #include "World2D.h"
 
-constexpr int W = 1200;
+constexpr int W = 800;
 constexpr int H = 800;
 
 int main()

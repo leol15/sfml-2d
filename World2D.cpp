@@ -6,10 +6,10 @@
 #include <chrono>
 #include <mutex>          // std::mutex
 
-#include "RollBug.h"
+#include "critter/RollBug.h"
 #include "World2D.h"
 
-constexpr float GRAVITY = 0.05;
+constexpr float GRAVITY = 0.1;
 constexpr float COLLISION_COE = 0.95;
 
 
@@ -28,7 +28,8 @@ World2D::World2D(int width, int height)
 		};
 		wc.critter_state->v.x = static_cast<float>(rand() % 100 - 50) / 10;
 		wc.critter_state->v.y = static_cast<float>(rand() % 100 - 50) / 10;
-		wc.critter_state->radius = 7;
+		wc.critter_state->radius = 10;
+		wc.critter_state->mass = 1;
 		critters.push_back(wc);
 	}
 	WorldCritter wc = {
@@ -105,13 +106,13 @@ void World2D::update() {
 			float sqD = sqDist(st->p, st2->p);
 			float touch_dist = st->radius + st2->radius;
 			if (sqD <= (touch_dist) * (touch_dist)) {
-				auto col1 = wc.critter_prop->color;
-				auto col2 = wc2.critter_prop->color;
-				if (magnitude(st->v) > magnitude(st2->v)) {
-					wc2.critter_prop->color = col1;	
-				} else {
-					wc.critter_prop->color = col2;
-				}
+				// auto col1 = wc.critter_prop->color;
+				// auto col2 = wc2.critter_prop->color;
+				// if (magnitude(st->v) > magnitude(st2->v)) {
+				// 	wc2.critter_prop->color = col1;	
+				// } else {
+				// 	wc.critter_prop->color = col2;
+				// }
 				// !
 				// todo mass
 				const float m1 = wc.critter_state->mass;
@@ -133,8 +134,8 @@ void World2D::update() {
 					st->p -= normalize(d12) * (distance / 2);
 					st2->p += normalize(d12) * (distance / 2);
 					// give it a kick too
-					st->v  += normalize(d12) * (abs(distance) / st->radius) * 0.9;
-					st2->v -= normalize(d12) * (abs(distance) / st->radius) * 0.9;
+					st->v  += normalize(d12) * bound(abs(distance) * 0.1, 0.3, 0);
+					st2->v -= normalize(d12) * bound(abs(distance) * 0.1, 0.3, 0);
 				}
 			}
 		}
@@ -154,6 +155,7 @@ void World2D::update() {
 	for (auto& wc : critters) {
 		CritterState * st = wc.critter_state;
 		// update
+		st->v += st->f / st->mass;
 		st->p += st->v;
 
 		// constaint
@@ -182,7 +184,7 @@ void World2D::handleEvents(sf::RenderWindow& window) {
 			};
 			wc.critter_state->v.y = 30;
 			wc.critter_state->mass = 40;
-			wc.critter_state->radius = 15;
+			wc.critter_state->radius = 7;
 			mtx_.lock();
 			critters.push_back(wc);
 			mtx_.unlock();

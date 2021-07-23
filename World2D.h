@@ -6,7 +6,7 @@
 #include <thread>
 #include <mutex>
 
-#include "Critter.h"
+#include "critter/Critter.h"
 
 typedef std::chrono::time_point<std::chrono::high_resolution_clock> time_point_t;
 

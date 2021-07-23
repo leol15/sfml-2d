@@ -1,5 +1,4 @@
 
-
 CPP=g++ -Wall -g
 
 INCLUDE=-IC:/MinGW/mylib/sfml/include/ -LC:/MinGW/mylib/sfml/lib/
@@ -12,28 +11,44 @@ LIB=\
 	-lsfml-window \
 	-lsfml-system
 
-HEADERS=RollBug.h World2D.h Critter.h Utils.h
+CRITTER_HEADERS=RollBug.h
+UTIL_HEADERS=Utils.h vec2.h
+HEADERS=World2D.h
 
-OBJS=RollBug.o World2D.o Utils.o
+OBJS=RollBug.o World2D.o Utils.o util/vec2.o
 
 default: main
 
-world: objs Utils.h
-	$(CPP) $(OBJS) $(INCLUDE) $(LIB) -o $@
+main: main.cpp objs
+	$(CPP) $< out/*.o $(INCLUDE) $(LIB) -o $@
 	./$@
 
-main: main.cpp objs Utils.h
-	$(CPP) $< *.o -o $@ $(INCLUDE) $(LIB)
-	./$@
+objs: outDir \
+	$(addprefix out/, $(CRITTER_HEADERS:.h=.o)) \
+	$(addprefix out/, $(UTIL_HEADERS:.h=.o)) \
+	$(addprefix out/, $(HEADERS:.h=.o))
 
-%.o: %.cpp %.h Utils.h
-	$(CPP) -c $< $(INCLUDE)
+outDir:
+	@[ ! -d "./out" ] && mkdir "out/" || echo good!
 
+out/%.o: critter/%.cpp critter/%.h
+	@echo critter $*
+	$(CPP) -c $< $(INCLUDE) -o $@
 
-objs: $(OBJS)
+out/%.o: util/%.cpp util/%.h
+	$(CPP) -c $< $(INCLUDE) -o $@
+
+out/%.o: %.cpp %.h
+	@echo default $*
+	$(CPP) -c $< $(INCLUDE) -o $@
 
 clean:
 	rm -f main.exe
 	rm -f *.o
+	rm -f out/*.o
 
 .PHONY: main
+
+# %:
+# 	@echo making $@
+
