@@ -12,10 +12,8 @@ LIB=\
 	-lsfml-system
 
 CRITTER_HEADERS=RollBug.h
-UTIL_HEADERS=Utils.h vec2.h
+UTIL_HEADERS=Utils.h vec2.h algo.h
 HEADERS=World2D.h
-
-OBJS=RollBug.o World2D.o Utils.o util/vec2.o
 
 default: main
 

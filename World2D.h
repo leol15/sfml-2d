@@ -22,6 +22,7 @@ public:
 	~World2D();
 	void render(sf::RenderWindow& window) const;
 	void handleEvents(sf::RenderWindow& window);
+	// collect interactions
 	void update();
 private:
 	int width_, height_;
@@ -30,6 +31,8 @@ private:
 	bool kill_thread_ = false;
 	std::thread update_thread_;
 	mutable std::mutex mtx_;
+	// update simulated objects and reset forces
+	void nextTick();
 };
 
 

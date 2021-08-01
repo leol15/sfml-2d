@@ -28,6 +28,10 @@ float sqDist(const vec2& p1, const vec2& p2) {
 	return sqDist(p1.x, p1.y, p2.x, p2.y);
 }
 
+float dist(const vec2& p1, const vec2& p2) {
+	return std::sqrt(sqDist(p1, p2));
+}
+
 vec2 normalize(const vec2& v) {
 	if (v.x == 0 && v.y == 0) {
 		return vec2(1, 0);

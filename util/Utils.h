@@ -26,6 +26,7 @@ void reflect(float & pos, float & vel, float min, float max);
 
 float sqDist(float x, float y, float x2, float y2);
 float sqDist(const vec2& p1, const vec2& p2);
+float dist(const vec2& p1, const vec2& p2);
 
 float bound(float val, float max, float min);
 
